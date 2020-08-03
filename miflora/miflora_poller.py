@@ -255,6 +255,9 @@ class MiFloraPoller:
                                       "The rest is not readable", i, history_length)
                         # connection.write_handle(_HANDLE_HISTORY_CONTROL, _CMD_HISTORY_READ_FAILED)
                         break
+                    except BrokenPipe:
+                        _LOGGER.info("Not able to write!")
+                        break
                     _LOGGER.info("Progress: reading entry %d of %d", i+1, history_length)
 
         (device_time, wall_time) = self._fetch_device_time()
