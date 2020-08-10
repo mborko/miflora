@@ -32,6 +32,11 @@ offers support for two Bluetooth implementations:
 * bluez tools (deprecated, via a wrapper around gatttool)
 * pygatt library
 
+### Necessary system package installation
+Please install following packages on your Debian based system:
+```bash
+apt install python3 python3-pip libglib2.0-dev
+```
 
 ### bluepy (recommended)
 To use the [bluepy](https://github.com/IanHarvey/bluepy) library you have to install it on your machine, in most cases this can be done via: 
