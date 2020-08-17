@@ -9,8 +9,9 @@ from miflora.miflora_poller import MiFloraPoller, \
     MI_CONDUCTIVITY, MI_MOISTURE, MI_LIGHT, MI_TEMPERATURE, MI_BATTERY
 
 from config import *
-import json
 from influxdb import InfluxDBClient
+import json
+import os
 
 try:
     db_client = InfluxDBClient(*influx_args)
@@ -134,6 +135,7 @@ def main():
         database_error = True
         db_client.write_points(json_body, time_precision='s')
         database_error = False
+
         # Only if transfer of history to DB was successfully transmitted, delete the history of the sensors!
         print(clear_hosts)
         for hostname in clear_hosts:
@@ -150,7 +152,10 @@ def main():
             with open(json_filename,'w') as json_file:
                 json.dump(json_body,json_file)
         except Exception as e:
-            print("Sorry, we lost also the cached data!")
+            print("Sorry, writing to cache file was not possible!")
+    else:
+        try: os.remove(json_filename)
+        except: pass
 
 
 if __name__ == '__main__':
