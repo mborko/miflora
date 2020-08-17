@@ -9,6 +9,7 @@ from miflora.miflora_poller import MiFloraPoller, \
     MI_CONDUCTIVITY, MI_MOISTURE, MI_LIGHT, MI_TEMPERATURE, MI_BATTERY
 
 from config import *
+import json
 from influxdb import InfluxDBClient
 
 try:
@@ -17,8 +18,13 @@ except ValueError:
     print("InfluxDBClient init failed. Check config!")
 backend = None
 clear_hosts = []
-json_body = []
-
+json_filename = '.cached_data'
+# Check if data was cached and load it
+try:
+    with open(json_filename,'r') as json_file:
+        json_body = json.load(json_file)
+except Exception as e:
+    json_body = []
 
 def valid_miflora_mac(mac, pat=re.compile(r"C4:7C:8D:[0-9A-F]{2}:[0-9A-F]{2}:[0-9A-F]{2}")):
     """Check for valid mac adresses."""
@@ -123,9 +129,11 @@ def main():
             print("History Data is corrupted!")
         except Exception as ex:
             print(str(ex))
-    print(json_body)
+
     try:
+        database_error = True
         db_client.write_points(json_body, time_precision='s')
+        database_error = False
         # Only if transfer of history to DB was successfully transmitted, delete the history of the sensors!
         print(clear_hosts)
         for hostname in clear_hosts:
@@ -135,6 +143,14 @@ def main():
         print("Connection to InfluxDB failed!")
     except Exception as e:
         print("Houston, we have a serious problem!")
+
+    # Cache data, if there was a problem with the Database connection
+    if database_error:
+        try:
+            with open(json_filename,'w') as json_file:
+                json.dump(json_body,json_file)
+        except Exception as e:
+            print("Sorry, we lost also the cached data!")
 
 
 if __name__ == '__main__':
